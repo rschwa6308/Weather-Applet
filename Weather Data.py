@@ -3,6 +3,7 @@ import time
 import json
 import requests
 from PIL import Image, ImageTk
+from pprint import pprint
 
 
 
@@ -12,24 +13,49 @@ class Home:
     def __init__(self):
         self.root = tk.Tk()
 
-        text_color = "white"
-        bg_color = "sky blue"
-
         self.root.title("Today's Weather")
-        self.root.config(bg=bg_color)
 
+        # Colors
+        header_text_color = "white"
+        header_bg_color = "sky blue"
+
+        body_bg_color = "white"
+        body_text_color = "black"
+
+        # Fonts
+        standard_font = ("Helvetica", 15)
+
+        # Initialize frames
+        self.header = tk.Frame(bg=header_bg_color)
+        self.body = tk.Frame(bg=body_bg_color)
+
+        # Header
         self.set_location()
 
-        tk.Label(text=self.city, font=("Helvetica", 30), fg=text_color, bg=bg_color).grid(row=0, column=0)
+        tk.Label(self.header, text=self.city, font=("Helvetica", 30), fg=header_text_color, bg=header_bg_color).grid(row=0, column=0)
 
         date = time.strftime("%A %x")
-        tk.Label(text=date, font=("Helvetica", 15), fg=text_color, bg=bg_color).grid(row=0, column=2)
+        tk.Label(self.header, text=date, font=standard_font, fg=header_text_color, bg=header_bg_color).grid(row=0, column=2)
 
         time_ = time.strftime("%H:%M")
-        tk.Label(text=time_, font=("Helvetica", 15), fg=text_color, bg=bg_color).grid(row=1, column=2)
+        tk.Label(self.header, text=time_, font=standard_font, fg=header_text_color, bg=header_bg_color).grid(row=1, column=2)
 
-        icon = ImageTk.PhotoImage(Image.open("weather icon.png"))
-        tk.Label(text="", image=icon).grid(row=2, column=1)
+        icon = ImageTk.PhotoImage(Image.open("weather icon small.png"))
+        self.icon_label = tk.Label(self.header, text="", image=icon, bg=header_bg_color)
+        self.icon_label.image = icon
+        self.icon_label.grid(row=2, column=1)
+
+        # Body
+        self.set_weather_data()
+
+        tk.Label(self.body, text=str(self.temperature), font=standard_font, fg=body_text_color, bg=body_bg_color).grid(row=0, column=0)
+
+
+        # Grid frames to root
+        self.header.grid(row=0)
+        self.body.grid(row=1)
+
+
 
     def set_location(self):
         url = 'http://ipinfo.io/json'
@@ -41,6 +67,12 @@ class Home:
         self.city = data['city']
         self.country = data['country']
         self.region = data['region']
+
+    def set_weather_data(self):
+        api_key = "59af29e891e63c457d4bd56217c66e36"
+        r = requests.get("http://api.openweathermap.org/data/2.5/weather?q=London&APPID={0}".format(api_key))
+        pprint(r.json())
+        self.temperature = 65
 
     def start(self):
         self.root.mainloop()
