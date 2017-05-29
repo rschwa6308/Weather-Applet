@@ -48,7 +48,8 @@ class Home:
         # Body
         self.set_weather_data()
 
-        tk.Label(self.body, text=str(self.temperature), font=standard_font, fg=body_text_color, bg=body_bg_color).grid(row=0, column=0)
+        temp = self.weather_data["main"]["temp"] * (9.0/5.0) - 459.67           # Convert from Kelvin to Farenheight
+        tk.Label(self.body, text=str(temp)[:4], font=standard_font, fg=body_text_color, bg=body_bg_color).grid(row=0, column=0)
 
 
         # Grid frames to root
@@ -70,9 +71,10 @@ class Home:
 
     def set_weather_data(self):
         api_key = "59af29e891e63c457d4bd56217c66e36"
-        r = requests.get("http://api.openweathermap.org/data/2.5/weather?q=London&APPID={0}".format(api_key))
+        r = requests.get("http://api.openweathermap.org/data/2.5/weather?q={0}&APPID={1}".format(self.city, api_key))
         pprint(r.json())
-        self.temperature = 65
+        self.weather_data = r.json()
+        self.weather_icon = requests.get("http://openweathermap.org/img/w/{0}.png".format(self.weather_data["weather"]["icon"]))
 
     def start(self):
         self.root.mainloop()
