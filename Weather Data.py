@@ -3,6 +3,7 @@ import time
 import json
 import requests
 from PIL import Image, ImageTk
+from io import BytesIO
 from pprint import pprint
 
 
@@ -41,16 +42,22 @@ class Home:
         tk.Label(self.header, text=time_, font=standard_font, fg=header_text_color, bg=header_bg_color).grid(row=1, column=2)
 
         icon = ImageTk.PhotoImage(Image.open("weather icon small.png"))
-        self.icon_label = tk.Label(self.header, text="", image=icon, bg=header_bg_color)
-        self.icon_label.image = icon
-        self.icon_label.grid(row=2, column=1)
+        self.picture_label = tk.Label(self.header, text="", image=icon, bg=header_bg_color)
+        self.picture_label.image = icon
+        self.picture_label.grid(row=2, column=1)
 
         # Body
         self.set_weather_data()
 
         temp = self.weather_data["main"]["temp"] * (9.0/5.0) - 459.67           # Convert from Kelvin to Farenheight
-        tk.Label(self.body, text=str(temp)[:4], font=standard_font, fg=body_text_color, bg=body_bg_color).grid(row=0, column=0)
+        tk.Label(self.body, text=str(temp)[:4] + "°", font=("Helvetica", 20), fg=body_text_color, bg=body_bg_color).grid(row=0, column=0)
 
+        self.icon_label = tk.Label(self.body, text="", image=self.weather_icon, bg=body_bg_color)
+        self.icon_label.image = self.weather_icon
+        self.icon_label.grid(row=0, column=1)
+
+        humid = self.weather_data["main"]["humidity"]
+        tk.Label(self.body, text=str(humid) + "%", font=standard_font, bg=body_bg_color, fg=body_text_color).grid(row=0, column=2)
 
         # Grid frames to root
         self.header.grid(row=0)
@@ -74,7 +81,8 @@ class Home:
         r = requests.get("http://api.openweathermap.org/data/2.5/weather?q={0}&APPID={1}".format(self.city, api_key))
         pprint(r.json())
         self.weather_data = r.json()
-        self.weather_icon = requests.get("http://openweathermap.org/img/w/{0}.png".format(self.weather_data["weather"]["icon"]))
+        icon_url = "http://openweathermap.org/img/w/{0}.png".format(self.weather_data["weather"][0]["icon"])
+        self.weather_icon = ImageTk.PhotoImage(Image.open(BytesIO(requests.get(icon_url).content)))
 
     def start(self):
         self.root.mainloop()
